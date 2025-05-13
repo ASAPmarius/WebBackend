@@ -57,42 +57,56 @@ function getDatabaseConfig() {
   
   if (databaseUrl) {
     try {
-      // Parse DATABASE_URL for Heroku
+      // Parse DATABASE_URL for Dokku/Heroku
+      console.log("Using Dokku/Heroku Postgres configuration from DATABASE_URL");
+      
+      // Regular expression to extract connection parts
       const regex = /postgres:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/;
       const match = databaseUrl.match(regex);
       
       if (match) {
         const [, user, password, host, port, database] = match;
-        console.log("Using Heroku Postgres configuration");
         return {
           user,
           password,
           database,
           hostname: host,
           port: Number(port),
-          ssl: { rejectUnauthorized: false }, // Required for Heroku Postgres
+          ssl: { rejectUnauthorized: false }, // Required for Dokku/Heroku Postgres
         };
       } else {
-        console.error("DATABASE_URL format not recognized");
+        console.error("DATABASE_URL format not recognized, using URL parsing");
+        // Alternative parsing using URL object
+        try {
+          const url = new URL(databaseUrl);
+          return {
+            user: url.username,
+            password: decodeURIComponent(url.password),
+            database: url.pathname.substring(1), // Remove leading slash
+            hostname: url.hostname,
+            port: Number(url.port) || 5432,
+            ssl: { rejectUnauthorized: false }, // Required for Dokku/Heroku Postgres
+          };
+        } catch (urlError) {
+          console.error("Error parsing DATABASE_URL as URL:", urlError);
+          throw new Error("Invalid DATABASE_URL format");
+        }
       }
     } catch (error) {
       console.error("Error parsing DATABASE_URL:", error);
+      // Don't throw here, fall back to individual config vars
     }
   }
   
-  // Fallback to individual config vars
-  console.log("Using standard database configuration");
-  console.log("DB_USER:", getEnv('DB_USER'));
-  console.log("DB_PASSWORD:", getEnv('DB_PASSWORD'));
-  console.log("DB_NAME:", getEnv('DB_NAME'));
-  console.log("DB_HOST:", getEnv('DB_HOST'));
-  console.log("DB_PORT:", getEnv('DB_PORT'));
+  // Fallback to individual config vars for local development
+  console.log("Using standard database configuration from environment variables");
   return {
     user: getEnv('DB_USER'),
     password: getEnv('DB_PASSWORD'),
     database: getEnv('DB_NAME'),
     hostname: getEnv('DB_HOST'),
     port: Number(getEnv('DB_PORT')),
+    // No SSL for local development by default
   };
 }
 
