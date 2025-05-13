@@ -25,15 +25,13 @@ export const backendUrl = isProduction
   : `http://${host}:${backendPort}`;
 
 export const frontendUrl = isProduction 
-  ? Deno.env.get('FRONTEND_URL') || `https://${host}`
+  ? `http://caracaca-frontend-ig3.igpolytech.fr`
   : `http://${host}:${frontendPort}`;
 
 // For CORS configuration - allowable origins
 export const allowedOrigins = isProduction 
   ? [
       frontendUrl, 
-      // Add any additional origins that need access
-      'https://caracaca-frontend-app.your-domain.com',
       // Handle case when frontendUrl might be different in the headers
       Deno.env.get('CORS_ALLOWED_ORIGINS') || '*'
     ] 
