@@ -1,8 +1,3 @@
-// backend/config.ts
-// Configuration module for environment-specific settings
-
-// Determine if we're in a production environment
-// Dokku sets the PORT environment variable automatically
 export const isProduction = !!Deno.env.get('PORT');
 
 // Base URLs for backend and frontend
@@ -31,9 +26,7 @@ export const frontendUrl = isProduction
 // For CORS configuration - allowable origins
 export const allowedOrigins = isProduction 
   ? [
-      frontendUrl, 
-      // Handle case when frontendUrl might be different in the headers
-      Deno.env.get('CORS_ALLOWED_ORIGINS') || '*'
+      frontendUrl
     ] 
   : [`http://${host}:${frontendPort}`, `http://localhost:${frontendPort}`];
 
