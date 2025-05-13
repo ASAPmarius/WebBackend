@@ -82,6 +82,11 @@ function getDatabaseConfig() {
   
   // Fallback to individual config vars
   console.log("Using standard database configuration");
+  console.log("DB_USER:", getEnv('DB_USER'));
+  console.log("DB_PASSWORD:", getEnv('DB_PASSWORD'));
+  console.log("DB_NAME:", getEnv('DB_NAME'));
+  console.log("DB_HOST:", getEnv('DB_HOST'));
+  console.log("DB_PORT:", getEnv('DB_PORT'));
   return {
     user: getEnv('DB_USER'),
     password: getEnv('DB_PASSWORD'),
