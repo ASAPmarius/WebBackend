@@ -20,7 +20,7 @@ export const backendUrl = isProduction
   : `http://${host}:${backendPort}`;
 
 export const frontendUrl = isProduction 
-  ? `http://caracaca-frontend-ig3.igpolytech.fr`
+  ? `http://caracaca-frontend.cluster-ig3.igpolytech.fr`
   : `http://${host}:${frontendPort}`;
 
 // For CORS configuration - allowable origins

@@ -38,6 +38,7 @@ const router = new Router();
 const app = new Application();
 
 const databaseUrl = Deno.env.get('DATABASE_URL');
+console.log('Database URL:', databaseUrl);
 
 const client = new Client(databaseUrl);
 
