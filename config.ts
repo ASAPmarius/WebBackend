@@ -2,7 +2,7 @@
 // Configuration module for environment-specific settings
 
 // Determine if we're in a production environment
-// Heroku sets the PORT environment variable automatically
+// Dokku sets the PORT environment variable automatically
 export const isProduction = !!Deno.env.get('PORT');
 
 // Base URLs for backend and frontend
@@ -11,35 +11,68 @@ export const backendPort = isProduction
   : '3000';
 
 export const frontendPort = isProduction 
-  ? '' // In production, frontend may be served by the same server or at a different domain
+  ? '' // In production, frontend is at a different domain
   : '8080';
 
-// Get the host (domain) - Heroku provides this in the HOST env var
+// Get the host (domain) - Dokku or Heroku provide this
 export const host = isProduction 
-  ? Deno.env.get('APP_DOMAIN') || '<your-app-name>.herokuapp.com' 
+  ? Deno.env.get('APP_DOMAIN') || 'localhost'
   : 'localhost';
 
-// Build the complete URLs
+// Build the complete URLs with prioritized environment variables for Dokku
 export const backendUrl = isProduction 
-  ? `https://${host}` 
+  ? Deno.env.get('BACKEND_URL') || `https://${host}`
   : `http://${host}:${backendPort}`;
 
 export const frontendUrl = isProduction 
-  ? 'https://' + (Deno.env.get('FRONTEND_URL') || host)
+  ? Deno.env.get('FRONTEND_URL') || `https://${host}`
   : `http://${host}:${frontendPort}`;
 
 // For CORS configuration - allowable origins
 export const allowedOrigins = isProduction 
   ? [
       frontendUrl, 
-      `https://caracaca-frontend-app-a3a330139af1.herokuapp.com/`
+      // Add any additional origins that need access
+      'https://caracaca-frontend-app.your-domain.com',
+      // Handle case when frontendUrl might be different in the headers
+      Deno.env.get('CORS_ALLOWED_ORIGINS') || '*'
     ] 
   : [`http://${host}:${frontendPort}`, `http://localhost:${frontendPort}`];
 
 // For WebSocket connection URLs
 export const websocketUrl = isProduction 
-  ? `wss://${host}` 
+  ? Deno.env.get('WEBSOCKET_URL') || `wss://${host}`
   : `ws://${host}:${backendPort}`;
+
+// Database configuration that handles Dokku's DATABASE_URL
+export const dbConfig = () => {
+  if (Deno.env.get('DATABASE_URL')) {
+    try {
+      const dbUrl = new URL(Deno.env.get('DATABASE_URL') || '');
+      return {
+        user: dbUrl.username,
+        password: decodeURIComponent(dbUrl.password),
+        database: dbUrl.pathname.substring(1), // Remove leading slash
+        hostname: dbUrl.hostname,
+        port: Number(dbUrl.port) || 5432,
+        ssl: isProduction ? { rejectUnauthorized: false } : undefined
+      };
+    } catch (error) {
+      console.error('Error parsing DATABASE_URL:', error);
+      // Fall back to individual settings
+    }
+  }
+  
+  // Fall back to individual environment variables
+  return {
+    user: Deno.env.get('DB_USER') || 'marius',
+    password: Deno.env.get('DB_PASSWORD') || 'caracaca123',
+    database: Deno.env.get('DB_NAME') || 'CaraData',
+    hostname: Deno.env.get('DB_HOST') || 'localhost',
+    port: Number(Deno.env.get('DB_PORT') || '5432'),
+    ssl: isProduction ? { rejectUnauthorized: false } : undefined
+  };
+};
 
 // Log the configuration when imported (helps with debugging)
 console.log('App Configuration:', {
@@ -47,5 +80,6 @@ console.log('App Configuration:', {
   backendUrl,
   frontendUrl,
   allowedOrigins,
-  websocketUrl
+  websocketUrl,
+  dbConfig: isProduction ? 'DATABASE_URL configured' : dbConfig()
 });

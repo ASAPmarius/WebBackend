@@ -2,19 +2,21 @@ FROM denoland/deno:1.41.0
 
 WORKDIR /app
 
-# Copy source code (except lockfile)
+# Copy source code
 COPY . .
 
-# Remove the lockfile to prevent version issues
-RUN rm -f deno.lock
-
-# Cache the dependencies without lockfile
-RUN deno cache --reload back_server.ts
-RUN deno cache --reload insert_cards.ts
-RUN deno cache --reload convertIMG.ts
-
-# Create directory for card images (if it doesn't exist)
+# Create directory for card images 
 RUN mkdir -p /app/cards_images
 
-# The command will be provided by docker-compose.yml
-ENTRYPOINT ["deno"]
+# Use RUN with shell command instead of COPY for conditional copy with error handling
+RUN if [ -d "./cards_images" ] && [ "$(ls -A ./cards_images 2>/dev/null)" ]; then \
+    cp -r ./cards_images/* /app/cards_images/ || echo "No card images to copy"; \
+  else \
+    echo "No cards_images directory or it's empty"; \
+  fi
+
+# Cache dependencies
+RUN deno cache back_server.ts
+
+# Using JSON array format
+CMD ["deno", "run", "--allow-net", "--allow-read=.", "--allow-env", "back_server.ts"]
