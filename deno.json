@@ -1,0 +1,39 @@
+{
+  "imports": {
+    "oak": "jsr:@oak/oak",
+    "cors": "jsr:@momiji/cors",
+    "bcrypt": "jsr:@felix/bcrypt",
+    "djwt": "jsr:@zaubrik/djwt",
+    "postgres": "jsr:@dewars/postgres@0.20.0",
+    "dotenv/load": "jsr:@std/dotenv/load",
+    "dotenv": "jsr:@std/dotenv@0.225.3"
+
+  },
+  "compilerOptions": {
+    "strict": true
+  },
+  "lint": {
+    "include": ["**/*.ts"],
+    "exclude": ["**/node_modules/**"],
+    "rules": {
+      "tags": ["recommended"],
+      "include": ["ban-untagged-todo"],
+      "exclude": ["no-unused-vars"]
+    }
+  },
+  "fmt": {
+    "include": ["**/*.ts"],
+    "exclude": ["**/node_modules/**"],
+    "useTabs": false,
+    "lineWidth": 100,
+    "indentWidth": 2,
+    "singleQuote": true
+  },
+  "tasks": {
+    "start": "deno run --allow-net --allow-read --allow-env back_server.ts",
+    "dev": "deno run --watch --allow-net --allow-read --allow-env back_server.ts",
+    "test": "deno test --allow-env --allow-read",
+    "lint": "deno lint",
+    "format": "deno fmt"
+  }
+}
