@@ -1,13 +1,3 @@
-// deno-lint-ignore-file no-explicit-any require-await
-import { loadSync } from 'dotenv';
-console.log('About to load .env file');
-const env = loadSync();
-console.log('Loaded .env file:');
-
-for (const [key, value] of Object.entries(env)) {
-  Deno.env.set(key, value); //this line is crucial
-}
-
 import { Application, Context, Router } from 'oak';
 import { cors, type CorsOptions } from 'cors';
 import { create, verify } from 'djwt';
@@ -27,9 +17,16 @@ addEventListener("unhandledrejection", (event) => {
   console.error("Unhandled promise rejection:", event.reason);
 });
 
-function getEnv(key: string): string {
+// Replace your current getEnv function with this:
+function getEnv(key: string, fallback?: string): string {
   const val = Deno.env.get(key);
-  if (!val) throw new Error(`Missing env var: ${key}`);
+  if (!val) {
+    if (fallback !== undefined) {
+      console.log(`Environment variable ${key} not found, using fallback value`);
+      return fallback;
+    }
+    throw new Error(`Missing required environment variable: ${key}. Please set this in Dokku with: dokku config:set app-name ${key}=value`);
+  }
   return val;
 }
 
@@ -38,15 +35,30 @@ const router = new Router();
 const app = new Application();
 
 const databaseUrl = Deno.env.get('DATABASE_URL');
-console.log('Database URL:', databaseUrl);
+console.log(`Using database connection: ${databaseUrl ? 'DATABASE_URL is set' : 'DATABASE_URL not found, will use individual DB params'}`);
 
-const client = new Client(databaseUrl);
-
+// Initialize Postgres client using DATABASE_URL if available
+let client: Client;
 try {
-  await client.connect();
-  console.log('Connected to PostgreSQL database');
+  if (databaseUrl) {
+    client = new Client(databaseUrl);
+    console.log('Using DATABASE_URL for database connection');
+  } else {
+    // Fallback to individual connection parameters
+    console.log('DATABASE_URL not found, using individual connection parameters');
+    client = new Client({
+      user: getEnv('DB_USER', 'postgres'),
+      password: getEnv('DB_PASSWORD', 'postgres'),
+      database: getEnv('DB_NAME', 'CaraData'),
+      hostname: getEnv('DB_HOST', 'localhost'),
+      port: Number(getEnv('DB_PORT', '5432')),
+    });
+  }
+  
+  console.log('Connecting to PostgreSQL database...');
 } catch (error) {
-  console.error('Failed to connect to database:', error);
+  console.error('Failed to initialize database client:', error);
+  throw new Error('Database configuration error: Check your DATABASE_URL or individual DB_ variables');
 }
 
 // Initialize card service
@@ -54,7 +66,6 @@ const cardService = new CardService(client);
 
 
 let defaultProfilePictureCache: Uint8Array | null = null;
-
 
 async function initDefaultProfilePicture(): Promise<void> {
   try {
@@ -96,8 +107,15 @@ addEventListener('unload', async () => {
 let secretKey: CryptoKey;
 
 try {
-  // Get the JWT secret from environment
+  // Get the JWT secret from environment - NO fallback for security reasons
+  console.log('Attempting to retrieve SECRET_KEY from environment');
   const jwtSecret = getEnv('SECRET_KEY');
+  
+  if (!jwtSecret || jwtSecret.length < 32) {
+    console.error('SECRET_KEY is too short or empty - this is a security risk');
+    console.error('Please set a strong SECRET_KEY with: dokku config:set caracaca-backend SECRET_KEY=your-strong-secret');
+    throw new Error('Invalid SECRET_KEY: Must be at least 32 characters');
+  }
   
   // Convert the string to a Uint8Array
   const encoder = new TextEncoder();
@@ -114,8 +132,9 @@ try {
   
   console.log('JWT secret key imported successfully');
 } catch (error) {
-  console.error('Failed to import JWT secret key:', error);
-  throw new Error('Server configuration error: JWT_SECRET missing or invalid');
+  console.error('SECRET_KEY error:', error);
+  throw new Error('SECRET_KEY configuration error: ' + 
+    (error instanceof Error ? error.message : 'Make sure SECRET_KEY is set in Dokku'));
 }
 
 // Helper function for safely converting binary data to base64
