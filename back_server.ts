@@ -1764,20 +1764,7 @@ function notifyGameUsers(gameId: number, message: any) {
   console.log(`Message broadcast complete: sent to ${sentCount} clients out of ${connections.length} total connections`);
 }
 
-// Add an OPTIONS handler for the login route
-router.options('/login', (ctx) => {
-  ctx.response.headers.set("Access-Control-Allow-Origin", "http://localhost:8080");
-  ctx.response.headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
-  ctx.response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept");
-  ctx.response.headers.set("Access-Control-Allow-Credentials", "true");
-  ctx.response.status = 204; // No content for OPTIONS
-});
-
 router.post('/login', checkIfAlreadyConnected, async (ctx) => {
-  // Manual CORS headers for login endpoint
-  ctx.response.headers.set("Access-Control-Allow-Origin", "http://localhost:8080");
-  ctx.response.headers.set("Access-Control-Allow-Credentials", "true");
-  
   const body = await ctx.request.body.json();
   const { username, password } = body;
   
@@ -1812,20 +1799,7 @@ router.post('/login', checkIfAlreadyConnected, async (ctx) => {
   ctx.response.body = { status: 'success', auth_token: token };
 });
 
-// Add an OPTIONS handler for the create_account route
-router.options('/create_account', (ctx) => {
-  ctx.response.headers.set("Access-Control-Allow-Origin", "http://localhost:8080");
-  ctx.response.headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
-  ctx.response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept");
-  ctx.response.headers.set("Access-Control-Allow-Credentials", "true");
-  ctx.response.status = 204; // No content for OPTIONS
-});
-
 router.post('/create_account', async (ctx) => {
-  // Manual CORS headers
-  ctx.response.headers.set("Access-Control-Allow-Origin", "http://localhost:8080");
-  ctx.response.headers.set("Access-Control-Allow-Credentials", "true");
-  
   const body = await ctx.request.body.json();
   const { username, password, profilePicture, bio, favoriteSong } = body;
 
@@ -1887,9 +1861,6 @@ router.post('/create_account', async (ctx) => {
 });
 
 router.post("/create-game", authorizationMiddleware, async (ctx) => {
-  ctx.response.headers.set("Access-Control-Allow-Origin", "http://localhost:8080");
-  ctx.response.headers.set("Access-Control-Allow-Credentials", "true");
-  
   try {
     const body = await ctx.request.body.json();
     const gameType = body.gameType || "war"; // Default to war game if not specified
@@ -1944,11 +1915,7 @@ router.post("/create-game", authorizationMiddleware, async (ctx) => {
   }
 });
 
-router.get('/get_cookie', async (ctx) => {
-  // Manual CORS headers
-  ctx.response.headers.set("Access-Control-Allow-Origin", "http://localhost:8080");
-  ctx.response.headers.set("Access-Control-Allow-Credentials", "true");
-  
+router.get('/get_cookie', async (ctx) => { 
   try {
     // Generate JWT token
     const token = await create({ alg: 'HS512', typ: 'JWT' }, { userName: 'dummy' }, secretKey);
@@ -1969,9 +1936,6 @@ router.get('/get_cookie', async (ctx) => {
 });
 
 router.get('/games', async (ctx) => {
-  ctx.response.headers.set("Access-Control-Allow-Origin", "http://localhost:8080");
-  ctx.response.headers.set("Access-Control-Allow-Credentials", "true");
-  
   try {
     const activeGames = await getAllActiveGames();
     
@@ -1997,10 +1961,6 @@ router.get('/games', async (ctx) => {
 });
 
 router.post('/finish-game', authorizationMiddleware, async (ctx) => {
-  // Manual CORS headers
-  ctx.response.headers.set("Access-Control-Allow-Origin", "http://localhost:8080");
-  ctx.response.headers.set("Access-Control-Allow-Credentials", "true");
-  
   const body = await ctx.request.body.json();
   const { gameId } = body;
   
@@ -2020,23 +1980,8 @@ router.post('/finish-game', authorizationMiddleware, async (ctx) => {
     ctx.response.body = { error: 'Failed to finish game' };
   }
 });
-
-// Enhanced active-game endpoint with player card counts
-// Add OPTIONS handler for active-game
-router.options('/active-game', (ctx) => {
-  ctx.response.headers.set("Access-Control-Allow-Origin", "http://localhost:8080");
-  ctx.response.headers.set("Access-Control-Allow-Methods", "GET, OPTIONS");
-  ctx.response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept");
-  ctx.response.headers.set("Access-Control-Allow-Credentials", "true");
-  ctx.response.status = 204; // No content for OPTIONS
-});
-
 // Improve the active-game endpoint further
 router.get('/active-game', async (ctx) => {
-  // Set CORS headers first
-  ctx.response.headers.set("Access-Control-Allow-Origin", "http://localhost:8080");
-  ctx.response.headers.set("Access-Control-Allow-Credentials", "true");
-  
   try {
     // Get token from multiple sources
     const cookie = ctx.request.headers.get('cookie');
@@ -2138,22 +2083,7 @@ router.get('/active-game', async (ctx) => {
   }
 });
 
-// Add OPTIONS handler for join-game
-router.options('/join-game', (ctx) => {
-  ctx.response.headers.set("Access-Control-Allow-Origin", "http://localhost:8080");
-  ctx.response.headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
-  ctx.response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept");
-  ctx.response.headers.set("Access-Control-Allow-Credentials", "true");
-  ctx.response.status = 204; // No content for OPTIONS
-});
-
-// Improved join-game endpoint with explicit type conversions
-// Improved join-game endpoint with explicit type conversions
 router.post('/join-game', async (ctx) => {
-  // Set CORS headers first
-  ctx.response.headers.set("Access-Control-Allow-Origin", "http://localhost:8080");
-  ctx.response.headers.set("Access-Control-Allow-Credentials", "true");
-  
   try {
     // Get token directly in this endpoint
     const cookie = ctx.request.headers.get('cookie');
@@ -2245,11 +2175,7 @@ router.post('/join-game', async (ctx) => {
   }
 });
 
-router.post('/start-game', authorizationMiddleware, async (ctx) => {
-  // Set CORS headers
-  ctx.response.headers.set("Access-Control-Allow-Origin", "http://localhost:8080");
-  ctx.response.headers.set("Access-Control-Allow-Credentials", "true");
-  
+router.post('/start-game', authorizationMiddleware, async (ctx) => { 
   try {
     const body = await ctx.request.body.json();
     const { gameId } = body;
@@ -2292,22 +2218,8 @@ router.post('/start-game', authorizationMiddleware, async (ctx) => {
     };
   }
 });
-
-// Add OPTIONS handler for restart-game
-router.options('/restart-game', (ctx) => {
-  ctx.response.headers.set("Access-Control-Allow-Origin", "http://localhost:8080");
-  ctx.response.headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
-  ctx.response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept");
-  ctx.response.headers.set("Access-Control-Allow-Credentials", "true");
-  ctx.response.status = 204; // No content for OPTIONS
-});
-
 // Add endpoint to restart a finished game
 router.post('/restart-game', authorizationMiddleware, async (ctx) => {
-  // Set CORS headers
-  ctx.response.headers.set("Access-Control-Allow-Origin", "http://localhost:8080");
-  ctx.response.headers.set("Access-Control-Allow-Credentials", "true");
-  
   try {
     const body = await ctx.request.body.json();
     const { gameId } = body;
@@ -2392,21 +2304,8 @@ router.post('/restart-game', authorizationMiddleware, async (ctx) => {
   }
 });
 
-// Add OPTIONS handler for disconnect-from-game
-router.options('/disconnect-from-game', (ctx) => {
-  ctx.response.headers.set("Access-Control-Allow-Origin", "http://localhost:8080");
-  ctx.response.headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
-  ctx.response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept");
-  ctx.response.headers.set("Access-Control-Allow-Credentials", "true");
-  ctx.response.status = 204; // No content for OPTIONS
-});
-
 // Update disconnect-from-game endpoint to support navigator.sendBeacon
 router.post('/disconnect-from-game', async (ctx) => {
-  // Set CORS headers first
-  ctx.response.headers.set("Access-Control-Allow-Origin", "http://localhost:8080");
-  ctx.response.headers.set("Access-Control-Allow-Credentials", "true");
-  
   try {
     // Get token from multiple sources including URL query for sendBeacon
     const cookie = ctx.request.headers.get('cookie');
@@ -2531,9 +2430,6 @@ router.post('/disconnect-from-game', async (ctx) => {
 
 // Profile endpoint
 router.post('/user-profile', authorizationMiddleware, async (ctx) => {
-  ctx.response.headers.set("Access-Control-Allow-Origin", "http://localhost:8080");
-  ctx.response.headers.set("Access-Control-Allow-Credentials", "true");
-  
   try {
     const body = await ctx.request.body.json();
     const { username } = body;
@@ -2580,9 +2476,6 @@ router.post('/user-profile', authorizationMiddleware, async (ctx) => {
 
 // Update profile endpoint
 router.post('/update-profile', authorizationMiddleware, async (ctx) => {
-  ctx.response.headers.set("Access-Control-Allow-Origin", "http://localhost:8080");
-  ctx.response.headers.set("Access-Control-Allow-Credentials", "true");
-  
   try {
     const body = await ctx.request.body.json();
     const { username, bio, favoriteSong, profilePicture } = body;
@@ -2652,29 +2545,8 @@ router.post('/update-profile', authorizationMiddleware, async (ctx) => {
   }
 });
 
-// Add OPTIONS handler for user-profile
-router.options('/user-profile', (ctx) => {
-  ctx.response.headers.set("Access-Control-Allow-Origin", "http://localhost:8080");
-  ctx.response.headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
-  ctx.response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept");
-  ctx.response.headers.set("Access-Control-Allow-Credentials", "true");
-  ctx.response.status = 204; // No content for OPTIONS
-});
-
-// Add OPTIONS handler for update-profile
-router.options('/update-profile', (ctx) => {
-  ctx.response.headers.set("Access-Control-Allow-Origin", "http://localhost:8080");
-  ctx.response.headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
-  ctx.response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept");
-  ctx.response.headers.set("Access-Control-Allow-Credentials", "true");
-  ctx.response.status = 204; // No content for OPTIONS
-});
-
 // New endpoint to get all card resources
 router.get("/api/cards", async (ctx) => {
-  ctx.response.headers.set("Access-Control-Allow-Origin", "http://localhost:8080");
-  ctx.response.headers.set("Access-Control-Allow-Credentials", "true");
-  
   try {
     const cards = await cardService.getAllCardsWithMetadata();
     ctx.response.body = { cards };
@@ -2894,49 +2766,30 @@ router.get("/ws", async (ctx) => {
 });
 // the cookie is tested in the middleware (the cookie is provided by the browser in a header)
 router.get('/test_cookie', authorizationMiddleware, (ctx) => {
-  // Manual CORS headers
-  ctx.response.headers.set("Access-Control-Allow-Origin", "http://localhost:8080");
-  ctx.response.headers.set("Access-Control-Allow-Credentials", "true");
-  
   ctx.response.body = { message: 'Token verified successfully', token_data: ctx.state.tokenData };
 });
 
-// Add custom CORS middleware
+//custom CORS middleware
 app.use(async (ctx, next) => {
   try {
     // Log the incoming request
     console.log(`${ctx.request.method} ${ctx.request.url.pathname} - Origin: ${ctx.request.headers.get("origin")}`);
     
-    // Add CORS headers based on configuration
-    const origin = ctx.request.headers.get("origin");
-    let allowOrigin = '';
+    // Get the request origin
+    const requestOrigin = ctx.request.headers.get("origin");
     
-    // Set the appropriate origin header based on the request origin
-    if (origin) {
-      for (const allowedOrigin of config.allowedOrigins) {
-        // Handle wildcard domains
-        if (allowedOrigin.includes('*')) {
-          const pattern = new RegExp(
-            '^' + allowedOrigin.replace('.', '\\.').replace('*', '.*') + '$'
-          );
-          if (pattern.test(origin)) {
-            allowOrigin = origin;
-            break;
-          }
-        } 
-        // Exact match
-        else if (origin === allowedOrigin) {
-          allowOrigin = origin;
-          break;
-        }
+    // Determine which origin to allow
+    let allowOrigin = config.frontendUrl; // Default to frontend URL from config
+    
+    if (requestOrigin) {
+      // If request has an origin header, check if it's in our allowed list
+      if (config.allowedOrigins.includes(requestOrigin)) {
+        allowOrigin = requestOrigin;
       }
+      // Otherwise use the default frontend URL
     }
     
-    // If no match was found, use the default frontend URL
-    if (!allowOrigin) {
-      allowOrigin = config.frontendUrl;
-    }
-    
+    // Set CORS headers consistently for all responses
     ctx.response.headers.set("Access-Control-Allow-Origin", allowOrigin);
     ctx.response.headers.set("Access-Control-Allow-Credentials", "true");
     ctx.response.headers.set("Access-Control-Allow-Methods", "GET,HEAD,PUT,POST,DELETE,PATCH,OPTIONS");
