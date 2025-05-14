@@ -2809,18 +2809,6 @@ app.use(async (ctx, next) => {
   }
 });
 
-// Configure CORS options
-const corsOptions: CorsOptions = {
-  origin: config.allowedOrigins,
-  credentials: true,
-  allowMethods: ["GET", "POST", "PUT", "DELETE"],
-  allowHeaders: ["Content-Type", "Authorization", "Accept"]
-};
-
-// Apply the cors middleware
-// @ts-ignore: The 'cors' library is compatible but TypeScript may not recognize its type definitions
-app.use(cors(corsOptions));
-
 // Add global error handling middleware
 app.use(async (ctx, next) => {
   try {
