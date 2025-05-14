@@ -1,5 +1,4 @@
 import { Application, Context, Router } from 'oak';
-import { cors, type CorsOptions } from 'cors';
 import { create, verify } from 'djwt';
 import { Client } from 'postgres';
 import { base64ToBytes, bytesToDataURL, convertImageToBytes } from './convertIMG.ts';
