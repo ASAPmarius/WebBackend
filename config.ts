@@ -16,11 +16,11 @@ export const host = isProduction
 
 // Build the complete URLs with prioritized environment variables for Dokku
 export const backendUrl = isProduction 
-  ? 'http://caracaca-backend.cluster-ig3.igpolytech.fr'
+  ? 'https://caracaca-backend.cluster-ig3.igpolytech.fr'
   : `http://${host}:${backendPort}`;
 
 export const frontendUrl = isProduction 
-  ? `http://caracaca-frontend.cluster-ig3.igpolytech.fr`
+  ? `https://caracaca-frontend.cluster-ig3.igpolytech.fr`
   : `http://${host}:${frontendPort}`;
 
 // For CORS configuration - allowable origins

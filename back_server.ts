@@ -1794,7 +1794,7 @@ router.post('/login', checkIfAlreadyConnected, async (ctx) => {
   ctx.response.status = 200;
   ctx.response.headers.set(
     'Set-Cookie',
-    `auth_token=${token}; HttpOnly; SameSite=Strict; Max-Age=3600`,
+    `auth_token=${token}; HttpOnly; SameSite=Strict; ${config.isProduction ? 'Secure; ' : ''}Max-Age=3600`,
   );
   ctx.response.body = { status: 'success', auth_token: token };
 });
@@ -1923,7 +1923,7 @@ router.get('/get_cookie', async (ctx) => {
     // Set the token in an HTTP-only cookie
     ctx.response.headers.set(
       'Set-Cookie',
-      `auth_token=${token}; HttpOnly; SameSite=Strict; Max-Age=3600`,
+      `auth_token=${token}; HttpOnly; SameSite=Strict; ${config.isProduction ? 'Secure; ' : ''}Max-Age=3600`,
     );
 
     // Return success
