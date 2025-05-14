@@ -16,7 +16,7 @@ export const host = isProduction
 
 // Build the complete URLs with prioritized environment variables for Dokku
 export const backendUrl = isProduction 
-  ? Deno.env.get('BACKEND_URL') || `https://${host}`
+  ? 'http://caracaca-backend.cluster-ig3.igpolytech.fr'
   : `http://${host}:${backendPort}`;
 
 export const frontendUrl = isProduction 
